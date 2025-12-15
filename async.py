@@ -4,8 +4,8 @@ import asyncio
 from openai import OpenAI
 from string import Template
 
-# https://platform.openai.com/docs/api-reference/chat/message-list?locale=en
-# https://docs.vllm.ai/en/stable/features/structured_outputs/#online-serving-openai-api
+
+
 
 # Load inputs and create asynchronous iterator
 input_file = "/pbs/throng/training/universite-hiver/wschooloptim/resinwinterschool/tweets_spanish_english.csv"
@@ -66,6 +66,7 @@ async def doCompletetion(input_):
     # input_.update({'res': res.output_text.strip()})
     # and return
     # return res
+
     return vllm_client.chat.completions.create(
         model=vllm_client.models.list().data[0].id,
         messages=[{
@@ -78,8 +79,6 @@ async def doCompletetion(input_):
         top_p=extra_body["top_p"],
     )
 
-
-
 async def run_all(start, end):
     # Asynchronously call the function for each prompt
     tasks = [
@@ -91,12 +90,24 @@ async def run_all(start, end):
     return results
 
 # Run all courutines
-init_idx = 0
-nb_tweets = 5000
+init_idx = 115789
+nb_tweets = 50
 start = time.time()
 results = asyncio.run(run_all(start=init_idx, end=init_idx + nb_tweets))
 elapsed = time.time() - start
-print(f"Annotationg {nb_tweets} tweets took {elapsed} seconds, this is {elapsed / nb_tweets} seconds per tweet.")
+print(f"""
+Annotationg {nb_tweets} tweets took {elapsed} seconds,
+this is {elapsed / nb_tweets} seconds per tweet or
+{(1 / (24 * 3600)) * len(inputs) * elapsed / nb_tweets} days for the whole database of {len(inputs)} inputs.
+""")
 
-for content in [res.choices[0].message.content for res in results]:
-    print(content)
+
+# vllm
+# Annotationg 50 tweets took 2.6444010734558105 seconds,
+# this is 0.05288802146911621 seconds per tweet or
+# 0.6389858522573003 days for the whole database of 1043873 inputs.
+
+# ollama
+# Annotationg 50 tweets took 26.955878496170044 seconds,
+# this is 0.5391175699234009 seconds per tweet or
+# 6.5135448503316 days for the whole database of 1043873 inputs.
