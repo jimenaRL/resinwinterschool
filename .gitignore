@@ -1,3 +1,4 @@
 .pyc
 tmp
 *.csv
+.ipynb_checkpoints/
